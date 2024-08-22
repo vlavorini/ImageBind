@@ -7,6 +7,8 @@
 
 import logging
 import math
+
+import numpy as np
 import pkg_resources
 
 import torch
@@ -80,32 +82,40 @@ def get_clip_timepoints(clip_sampler, duration):
     return all_clips_timepoints
 
 
+IMAGE_TRANSFORMS = transforms.Compose(
+    [
+        transforms.Resize(224, interpolation=transforms.InterpolationMode.BICUBIC),
+        transforms.CenterCrop(224),
+        transforms.ToTensor(),
+        transforms.Normalize(
+            mean=(0.48145466, 0.4578275, 0.40821073),
+            std=(0.26862954, 0.26130258, 0.27577711),
+        ),
+    ]
+)
+
+def load_and_transform_single_image(image_arr, device):
+    image = Image.fromarray(image_arr, mode="RGB")
+    image = IMAGE_TRANSFORMS(image).to(device)
+    return torch.stack([image], dim=0)
+
 def load_and_transform_vision_data(image_paths, device):
     if image_paths is None:
         return None
 
     image_outputs = []
 
-    data_transform = transforms.Compose(
-        [
-            transforms.Resize(224, interpolation=transforms.InterpolationMode.BICUBIC),
-            transforms.CenterCrop(224),
-            transforms.ToTensor(),
-            transforms.Normalize(
-                mean=(0.48145466, 0.4578275, 0.40821073),
-                std=(0.26862954, 0.26130258, 0.27577711),
-            ),
-        ]
-    )
-
     for image_path in image_paths:
-        if isinstance(image, str):
+        if isinstance(image_path, str):
             with open(image_path, "rb") as fopen:
                 image = Image.open(fopen)
                 image = ImageOps.exif_transpose(image)
                 image = image.convert("RGB")
-
-        image = data_transform(image).to(device)
+        elif isinstance(image_path, np.ndarray):
+            image = Image.fromarray(image_path, mode="RGB")
+        else:
+            raise ValueError("Wrong format.")
+        image = IMAGE_TRANSFORMS(image).to(device)
         image_outputs.append(image)
     return torch.stack(image_outputs, dim=0)
 
