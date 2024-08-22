@@ -12,7 +12,7 @@ import pkg_resources
 import torch
 import torch.nn as nn
 import torchaudio
-from PIL import Image
+from PIL import Image, ImageOps
 from pytorchvideo import transforms as pv_transforms
 from pytorchvideo.data.clip_sampling import ConstantClipsPerVideoSampler
 from pytorchvideo.data.encoded_video import EncodedVideo
@@ -99,11 +99,14 @@ def load_and_transform_vision_data(image_paths, device):
     )
 
     for image_path in image_paths:
-        with open(image_path, "rb") as fopen:
-            image = Image.open(fopen).convert("RGB")
+        if isinstance(image, str):
+            with open(image_path, "rb") as fopen:
+                image = Image.open(fopen)
+                image = ImageOps.exif_transpose(image)
+                image = image.convert("RGB")
 
-        image = data_transform(image).to(device)
-        image_outputs.append(image)
+    image = data_transform(image).to(device)
+    image_outputs.append(image)
     return torch.stack(image_outputs, dim=0)
 
 
