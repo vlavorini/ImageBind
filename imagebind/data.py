@@ -105,8 +105,8 @@ def load_and_transform_vision_data(image_paths, device):
                 image = ImageOps.exif_transpose(image)
                 image = image.convert("RGB")
 
-    image = data_transform(image).to(device)
-    image_outputs.append(image)
+        image = data_transform(image).to(device)
+        image_outputs.append(image)
     return torch.stack(image_outputs, dim=0)
 
 
