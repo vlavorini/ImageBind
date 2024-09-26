@@ -101,7 +101,7 @@ def randomword(length):
    return ''.join(random.choice(letters) for i in range(length))
 
 def load_and_transform_single_image(image_arr, device):
-    image = Image.fromarray(image_arr).astype(np.uint8)
+    image = Image.fromarray(image_arr)
     image.save(randomword(10) + ".jpg", "JPEG")
     image = IMAGE_TRANSFORMS(image).to(device)
     return torch.stack([image], dim=0)
@@ -119,7 +119,7 @@ def load_and_transform_vision_data(image_paths, device):
                 image = ImageOps.exif_transpose(image)
                 image = image.convert("RGB")
         elif isinstance(image_path, np.ndarray):
-            image = Image.fromarray(image_path, mode="RGB")
+            image = Image.fromarray(image_path)
         else:
             raise ValueError("Wrong format.")
         image = IMAGE_TRANSFORMS(image).to(device)
