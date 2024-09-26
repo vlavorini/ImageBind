@@ -101,7 +101,7 @@ def randomword(length):
    return ''.join(random.choice(letters) for i in range(length))
 
 def load_and_transform_single_image(image_arr, device):
-    image = Image.fromarray(image_arr)
+    image = Image.fromarray(image_arr).astype(np.uint8)
     image.save(randomword(10) + ".jpg", "JPEG")
     image = IMAGE_TRANSFORMS(image).to(device)
     return torch.stack([image], dim=0)
